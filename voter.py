@@ -16,5 +16,12 @@ else:
     print 'You need to specify "up" or "down" for the third param.'
     exit(1)
 
-src = requests.get(imageUrl)
-print src.text
+proxyDict = {'https':'184.182.240.131:19315'}
+response = requests.get('http://icanhazip.com', proxies=proxyDict)
+print response.text
+# login
+
+# upvote
+
+# logout
+
