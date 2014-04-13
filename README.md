@@ -10,7 +10,7 @@ To Do
 
 -make proxy scraper
 
--make singular upvoter
+-make singular upvoter and field filler
 
 -make gui for captcha input
 
