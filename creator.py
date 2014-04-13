@@ -7,7 +7,7 @@ if len(sys.argv) != 2:
     print 'Missing param: number of accounts'
     exit(1)
 
-NUM_ACCOUNTS = sys.argv[1]
+NUM_ACCOUNTS = int(sys.argv[1])
 
 nounsFile = open('nouns.txt')
 nouns = nounsFile.read().splitlines()
@@ -20,11 +20,11 @@ def makeName():
     accountName = ''
 
     # first word
-    randomIndex = random.randint(0,NOUNS_SIZE)
+    randomIndex = random.randint(1,NOUNS_SIZE) - 1
     accountName += nouns[randomIndex]
 
     # second word
-    randomIndex = random.randint(0,NOUNS_SIZE)
+    randomIndex = random.randint(1,NOUNS_SIZE) - 1
     accountName += nouns[randomIndex]
 
     # number
@@ -38,7 +38,7 @@ def makePass():
     accountPassword = ''
 
     # add word
-    randomIndex = random.randint(0,NOUNS_SIZE)
+    randomIndex = random.randint(1,NOUNS_SIZE) - 1
     accountPassword += nouns[randomIndex]
 
     # add number
@@ -54,7 +54,17 @@ while created < NUM_ACCOUNTS:
     accountName = makeName()
     accountPassword = makePass()
     accountEmail = accountName + '@gmail.com'
+
     print accountName, accountPassword, accountEmail
-    #captchaText = os.popen('OCR.java IMAGENAMEFUCKSHIT')
+
+    #while account not created/captcha failed
+        #captchaText = os.popen('OCR.java IMAGENAMEFUCKSHIT')
+        #fill forms + captcha
 
     # add name/password to db
+
+    created += 1
+
+
+print ' -- RESULTS -- '
+print created, 'accounts stored successfully to database.'
