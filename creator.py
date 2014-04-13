@@ -1,11 +1,15 @@
-import os
+from bs4 import BeautifulSoup as soup
 import sys
 import pymongo
 import random
+import requests
+import Tkinter as tk
+
 
 if len(sys.argv) != 2:
     print 'Missing param: number of accounts'
     exit(1)
+
 
 NUM_ACCOUNTS = int(sys.argv[1])
 
@@ -14,6 +18,27 @@ nouns = nounsFile.read().splitlines()
 nounsFile.close()
 
 NOUNS_SIZE = len(nouns)
+
+
+class App:
+    def __init__(self, master):
+        frame = Frame(master)
+        frame.pack()
+
+        self.button = Button(
+            frame, text='QUIT', fg='red', command=frame.quit
+            )
+        self.button.pack(side=tk.LEFT)
+        self.hi_there = Button(frame, text='Hello!', command=self.say_hi)
+        self.hi_there.pack(side=tk.LEFT)
+
+    def say_hi(self):
+        print 'hi there, everyone!'
+
+    root = tk.Tk()
+    app = App(root)
+    root.mainloop()
+    root.destroy()
 
 
 def makeName():
@@ -51,17 +76,21 @@ def makePass():
 created = 0 # number of accounts added to DB
 
 while created < NUM_ACCOUNTS:
+    # set up login details
     accountName = makeName()
     accountPassword = makePass()
     accountEmail = accountName + '@gmail.com'
 
+    # pick 3 ips to set as primary, secondary, tertiary
+    # create proxy dict, change identity to proxy
+
     print accountName, accountPassword, accountEmail
 
     #while account not created/captcha failed
-        #captchaText = os.popen('OCR.java IMAGENAMEFUCKSHIT')
-        #fill forms + captcha
+        # prompt for captcha entry
+        # (re)fill forms and
 
-    # add name/password to db
+    # add name/password/ips to db
 
     created += 1
 

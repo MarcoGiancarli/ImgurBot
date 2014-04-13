@@ -1,8 +1,7 @@
 import sys
 import pymongo
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup as soup
 import requests
-import urllib
 
 if len(sys.argv) != 4:
     print 'Invalid params! Usage: <image key> <number of votes> <up/down>'
@@ -25,14 +24,13 @@ else:
 # go through list of proxies until valid one is confirmed
 # if no valid proxies attached to account, select 3 new ones
 
-proxies = {'https':'202.118.236.130:3128'}
-
+proxies = {'http':'http://221.176.14.72:80'}
 response = requests.get('http://icanhazip.com',proxies=proxies)
-print response.text
+print 'Using IP',response.text
 
 # login
-
+# wait a bit
 # upvote
-
+# wait some more
 # logout
-
+# rinse & repeat
