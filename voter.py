@@ -47,7 +47,7 @@ profile.set_preference('network.proxy.http','24.96.4.198')
 profile.set_preference('network.proxy.http_port',8080)
 profile.update_preferences()
 firefox = webdriver.Firefox(firefox_profile=profile)
-wait = WebDriverWait(firefox, 10)
+wait = WebDriverWait(firefox, 5)
 
 # confirm proxy ip
 firefox.get('http://icanhazip.com')
