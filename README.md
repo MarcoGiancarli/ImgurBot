@@ -7,9 +7,9 @@ Usage:
 
 $ python updateProxies.py
 
-$ python creator.py <numAccounts>
+$ python creator.py <'numAccounts'>
 
-$ python voter.py <imgTag> <numVotes> <'up'/'down'>
+$ python voter.py <'imgTag'> <'numVotes'> <'up'/'down'>
 
 
 To Do
