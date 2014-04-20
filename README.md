@@ -1,7 +1,7 @@
 ImgurBot
 ========
 
-ImgurBot makes it easy to quickly create imgur.com accounts, store them in a database, and upvote with them automatically. Disclaimer: DO NOT USE THIS. I take no responsibility for the actions of any person who uses this software. Utilizes the following modules: requests, pymongo, selenium webdriver, beautiful soup. Must have Firefox installed due to webdriver dependencies.
+ImgurBot makes it easy to quickly create imgur.com accounts, store them in a database, and upvote with them automatically. Disclaimer: DO NOT USE THIS. I take no responsibility for the actions of any person who uses this software. Utilizes the following modules: requests, pymongo, selenium webdriver, beautiful soup. Must have Firefox installed due to webdriver dependencies, and must have mongoDB.
 
 Usage:
 
