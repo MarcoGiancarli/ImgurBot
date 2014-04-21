@@ -1,6 +1,6 @@
 Aeroplane
 Air
-Aircraft Carrier
+AircraftCarrier
 Airforce
 Airport
 Album
@@ -35,12 +35,11 @@ Butterfly
 Button
 Cappuccino
 Car
-Car-race
 Carpet
 Carrot
 Cave
 Chair
-Chess Board
+ChessBoard
 Chief
 Child
 Chisel
@@ -53,15 +52,15 @@ Circus
 Clock
 Clown
 Coffee
-Coffee-shop
+CoffeeShop
 Comet
-Compact Disc
+CompactDisc
 Compass
 Computer
 Crystal
 Cup
 Cycle
-Data Base
+DataBase
 Desk
 Diamond
 Dress
@@ -109,14 +108,14 @@ Horoscope
 Horse
 Hose
 Ice
-Ice-cream
+IceCream
 Insect
-Jet fighter
+JetFighter
 Junk
 Kaleidoscope
 Kitchen
 Knife
-Leather jacket
+Leatherjacket
 Leg
 Library
 Liquid
@@ -130,7 +129,7 @@ Microscope
 Milk
 Milkshake
 Mist
-Money $$$$
+Money
 Monster
 Mosquito
 Mouth
@@ -151,7 +150,7 @@ Pillow
 Plane
 Planet
 Pocket
-Post-office
+PostOffice
 Potato
 Printer
 Prison
@@ -185,14 +184,14 @@ Slave
 Snail
 Software
 Solid
-Space Shuttle
+SpaceShuttle
 Spectrum
 Sphere
 Spice
 Spiral
 Spoon
-Sports-car
-Spot Light
+SportsCar
+SpotLight
 Square
 Staircase
 Star
@@ -200,14 +199,14 @@ Stomach
 Sun
 Sunglasses
 Surveyor
-Swimming Pool
+SwimmingPool
 Sword
 Table
 Tapestry
 Teeth
 Telescope
 Television
-Tennis racquet
+TennisRacquet
 Thermometer
 Tiger
 Toilet
@@ -231,4 +230,4 @@ Wheelchair
 Window
 Woman
 Worm
-X-ray
+Xray

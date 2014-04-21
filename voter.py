@@ -28,16 +28,17 @@ else:
 
 ########## GET PROXY/USER/PASS FROM DB ##########
 
-# go through list of proxies until valid one is confirmed
-# if no valid proxies attached to account, select 3 new ones
+# get an array of dicts that are pulled from the documents in database
+
+# go through the three proxies until valid one is confirmed
+
+# if no valid proxies attached to account, select 3 new ones from the
+# proxylist collection and repeat
 
 username = 'decisions'
 password = '052795'
 nativeIP = requests.get('http://icanhazip.com').text
-proxies = {'http':'http://221.176.14.72:80'}
-requestsIP = requests.get('http://icanhazip.com',proxies=proxies).text
 print 'Native IP',nativeIP
-print 'Requests Module IP',requestsIP
 
 ########## BEGIN SELENIUM ##########
 
@@ -47,9 +48,9 @@ profile.set_preference('network.proxy.http','24.96.4.198')
 profile.set_preference('network.proxy.http_port',8080)
 profile.update_preferences()
 firefox = webdriver.Firefox(firefox_profile=profile)
-wait = WebDriverWait(firefox, 5)
+wait = WebDriverWait(firefox, 8)
 
-# confirm proxy ip
+# confirm proxy ip in selenium
 firefox.get('http://icanhazip.com')
 try:
     seleniumIP = wait.until(lambda firefox:firefox.find_element_by_tag_name('pre').text)
