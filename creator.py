@@ -62,10 +62,17 @@ def genIndices(size):
 connection = pymongo.Connection()
 db = connection['imgurbotdata']
 logindata = db['logindata']
-proxies = db['proxylist'].find({})
+proxyCollection = db['proxylist'].find({})
 
+# check logindata size
+numAccountsInDB = 0
+accountList = logindata.find({})
+for account in accountList:
+    numAccountsInDB += 1
+
+# throw proxy collection into a list for easy access
 proxylist = []
-for proxy in proxies:
+for proxy in proxyCollection:
     proxylist.append(proxy)
 
 # shuffle proxylist
@@ -100,8 +107,8 @@ while numCreated < NUM_ACCOUNTS:
         for proxy in proxies:
             try:
                 print 'Trying to reach '+proxy['protocol']+'://'+proxy['ip']+':'+proxy['port']+'...'
-                proxyIP = requests.get('http://icanhazip.com',
-                        {proxy['protocol']:'http://'+proxy['ip']+':'+proxy['port']}).text
+                testProxy = {proxy['protocol']:'http://'+proxy['ip']+':'+proxy['port']}
+                proxyIP = requests.get('http://icanhazip.com',proxies=testProxy,timeout = 5).text
                 if proxyIP != nativeIP:
                     workingProxy = proxy
                     reachable = True
@@ -169,32 +176,36 @@ while numCreated < NUM_ACCOUNTS:
             try:
                 nextPage = wait.until(lambda firefox:firefox.find_element_by_class_name(
                         'total-images-suffix'))
-                correct = True
+                print 'Captcha entered correctly. Would you like a cookie, or a gold star?'
+                correct = True    # if we get this far, everything is good
                 break
             except:
                 pass
             try:
                 failCheck = wait.until(lambda firefox:firefox.find_element_by_class_name(
                         'textbox explanation error center'))
+                print 'You failed the captcha. YOU HAD ONE JOB. Retrying...'
                 break
             except:
                 pass
 
-
     # Nailed it.
 
-    #while account not created/captcha failed
-        # prompt for captcha entry
-        # (re)fill forms and
+    # logout now, we're done creating this account
+    userButton = firefox.find_element_by_class_name('account-user-name')
+    userButton.click()
+    logoutButton = firefox.find_element_by_link_text('logout')
+    logoutButton.click()
 
     # add name/password/ips to db if creation was successful
-    #logindata.insert({'username':accountName,'password':accountPassword,'proxies':proxies})
-    # DONT ADD THIS UNTIL YOU MAKE AN ACCOUNT WITHOUT ADDING TO DB!
+    logindata.insert({'username':accountName,'password':accountPassword,'proxies':proxies})
 
-    print 'Successfully created:',accountName,'--',accountPassword+'...'
     numCreated += 1
+    print 'Successfully created:',accountName,'--',accountPassword+'.'
+    print 'Created',numCreated,'of',NUM_ACCOUNTS,'so far.'
     firefox.quit()
 
 
 print ' -- RESULTS -- '
 print numCreated, 'accounts stored successfully to database.'
+print 'Total accounts in database:', numCreated + numAccountsInDB
