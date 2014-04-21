@@ -24,4 +24,7 @@ To Do
 -set up main loop for dbs in upvoter
 
 -finish main loop in creator
+<<<<<<< HEAD
 
+=======
+>>>>>>> 9ce9da2c6e0bb2ec55fdef39b0a219e9fac48fbc
