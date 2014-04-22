@@ -69,6 +69,7 @@ numAccountsInDB = 0
 accountList = logindata.find({})
 for account in accountList:
     numAccountsInDB += 1
+print 'Number of accounts in database:',numAccountsInDB
 
 # throw proxy collection into a list for easy access
 proxylist = []
@@ -108,7 +109,7 @@ while numCreated < NUM_ACCOUNTS:
             try:
                 print 'Trying to reach '+proxy['protocol']+'://'+proxy['ip']+':'+proxy['port']+'...'
                 testProxy = {proxy['protocol']:'http://'+proxy['ip']+':'+proxy['port']}
-                proxyIP = requests.get('http://icanhazip.com',proxies=testProxy,timeout = 5).text
+                proxyIP = requests.get('http://icanhazip.com',proxies=testProxy,timeout = 3).text
                 if proxyIP != nativeIP:
                     workingProxy = proxy
                     reachable = True
@@ -130,7 +131,8 @@ while numCreated < NUM_ACCOUNTS:
     profile.set_preference('network.proxy.http_port',workingProxy['port'])
     profile.update_preferences()
     firefox = webdriver.Firefox(firefox_profile=profile)
-    wait = WebDriverWait(firefox, 8)
+    wait = WebDriverWait(firefox, 5)
+    wait1s = WebDriverWait(firefox, 1)
 
     # confirm proxy ip in selenium
     firefox.get('http://icanhazip.com')
@@ -156,46 +158,58 @@ while numCreated < NUM_ACCOUNTS:
     while not correct:
         firefox.get(REGISTER_URL)
 
-        nameForm = wait.until(lambda firefox:firefox.find_element_by_id('url'))
-        emailForm = wait.until(lambda firefox:firefox.find_element_by_id('email'))
-        passForm = wait.until(lambda firefox:firefox.find_element_by_id('password'))
-        confirmForm = wait.until(lambda firefox:firefox.find_element_by_id('confirmPassword'))
-        captchaForm = wait.until(lambda firefox:firefox.find_element_by_id('recaptcha_response_field'))
-        agreeBox = wait.until(lambda firefox:firefox.find_element_by_id('agree'))
+        try:
+            nameForm = wait.until(lambda firefox:firefox.find_element_by_id('url'))
+            emailForm = wait.until(lambda firefox:firefox.find_element_by_id('email'))
+            passForm = wait.until(lambda firefox:firefox.find_element_by_id('password'))
+            confirmForm = wait.until(lambda firefox:firefox.find_element_by_id('confirmPassword'))
+            captchaForm = wait.until(lambda firefox:firefox.find_element_by_id('recaptcha_response_field'))
+            agreeBox = wait.until(lambda firefox:firefox.find_element_by_id('agree'))
 
-        nameForm.send_keys(accountName)
-        emailForm.send_keys(accountEmail)
-        passForm.send_keys(accountPassword)
-        confirmForm.send_keys(accountPassword)
-        agreeBox.click()
-        captchaForm.click()
+            nameForm.send_keys(accountName)
+            emailForm.send_keys(accountEmail)
+            passForm.send_keys(accountPassword)
+            confirmForm.send_keys(accountPassword)
+            agreeBox.click()
+            captchaForm.click()
+
+        except:
+            continue
 
         # wait for user response before continuing!
         # when we see either of these two elements, we have succeeded or failed
         while True:
             try:
-                nextPage = wait.until(lambda firefox:firefox.find_element_by_class_name(
+                nextPage = wait1s.until(lambda firefox:firefox.find_element_by_class_name(
                         'total-images-suffix'))
                 print 'Captcha entered correctly. Would you like a cookie, or a gold star?'
                 correct = True    # if we get this far, everything is good
                 break
             except:
                 pass
+            if firefox.current_url != REGISTER_URL:
+                print 'Captcha entered correctly. Would you like a cookie, or a gold star?'
+                correct = True
+                break
             try:
-                failCheck = wait.until(lambda firefox:firefox.find_element_by_class_name(
+                failCheck = wait1s.until(lambda firefox:firefox.find_element_by_class_name(
                         'textbox explanation error center'))
                 print 'You failed the captcha. YOU HAD ONE JOB. Retrying...'
+                accountName += '0'
+                accountEmail += '0'
                 break
             except:
                 pass
 
     # Nailed it.
 
-    # logout now, we're done creating this account
-    userButton = firefox.find_element_by_class_name('account-user-name')
-    userButton.click()
-    logoutButton = firefox.find_element_by_link_text('logout')
-    logoutButton.click()
+    # the name will be in the url if you register without error.
+    if accountName.lower() in firefox.current_url:
+        # logout now, we're done creating this account
+        userButton = firefox.find_element_by_class_name('account-user-name')
+        userButton.click()
+        logoutButton = firefox.find_element_by_link_text('logout')
+        logoutButton.click()
 
     # add name/password/ips to db if creation was successful
     logindata.insert({'username':accountName,'password':accountPassword,'proxies':proxies})

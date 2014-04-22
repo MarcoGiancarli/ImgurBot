@@ -99,4 +99,4 @@ for proxy in proxylist.find():
     port = proxy['port']
     protocol = proxy['protocol']
     print ip,' '*(17-len(ip)),port,' '*(6-len(port)),protocol
-
+print 'Proxy count in database:',numFound
