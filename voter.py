@@ -7,6 +7,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.proxy import *
+import random
 
 if len(sys.argv) != 4:
     print 'Invalid params! Usage: <image key> <number of votes> <up/down>'
@@ -59,21 +60,21 @@ for account in logindataCollection.find({}):
 # shuffle logindata
 for i in range(0,len(logindata)):
     randomIndex = random.randint(i,len(logindata)-1)
-        tmp = logindata[i]
-            logindata[i] = logindata[randomIndex]
-                logindata[randomIndex] = tmp
+    tmpLogin = logindata[i]
+    logindata[i] = logindata[randomIndex]
+    logindata[randomIndex] = tmpLogin
 
 # get a list of proxies from database
 proxylist = []
-for proxy in proxyCollection:
+for proxy in proxylistCollection.find({}):
     proxylist.append(proxy)
 
 # shuffle proxylist
 for i in range(0,len(proxylist)):
     randomIndex = random.randint(i,len(proxylist)-1)
-        tmp = proxylist[i]
-            proxylist[i] = proxylist[randomIndex]
-                proxylist[randomIndex] = tmp
+    tmpProxy = proxylist[i]
+    proxylist[i] = proxylist[randomIndex]
+    proxylist[randomIndex] = tmpProxy
 
 
 # cycle through the shuffled account list
@@ -116,7 +117,7 @@ for account in logindata:
                 proxies.append(proxylist[index])
 
     # update database with current proxies
-    proxies
+    logindataCollection.update({'_id':account['_id']},{'$set':{'proxies':proxies}},upsert=False,multi=False)
 
 
     ########## BEGIN SELENIUM ##########
@@ -174,7 +175,7 @@ for account in logindata:
     firefox.quit()
 
     # break if we have enough votes.
-    if voteCount > NUM_VOTES:
+    if voteCount >= NUM_VOTES:
         break
 
 ########## RESULTS ##########
