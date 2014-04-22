@@ -112,7 +112,7 @@ while numCreated < NUM_ACCOUNTS:
             try:
                 print 'Trying to reach '+proxy['protocol']+'://'+proxy['ip']+':'+proxy['port']+'...'
                 testProxy = {proxy['protocol']:'http://'+proxy['ip']+':'+proxy['port']}
-                proxyIP = requests.get('http://icanhazip.com',proxies=testProxy,timeout = 3).text
+                proxyIP = requests.get('http://icanhazip.com',proxies=testProxy,timeout=4).text
                 if proxyIP != nativeIP:
                     workingProxy = proxy
                     reachable = True
