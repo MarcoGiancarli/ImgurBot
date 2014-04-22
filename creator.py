@@ -43,6 +43,9 @@ def makePass():
     # add number
     randomIndex = random.randint(1,999)
     accountPassword += str(randomIndex)
+    # if length less than 6, add another digit
+    while len(accountPassword) < 6:
+        accountPassword += str(random.randint(0,9))
     return accountPassword
 
 
