@@ -7,24 +7,16 @@ Usage:
 
 $ python updateProxies.py
 
-$ python creator.py <'numAccounts'>
+$ python creator.py numAccounts
 
-$ python voter.py <'imgTag'> <'numVotes'> <'up'/'down'>
+$ python voter.py imgTag numVotes up/down
 
 
 To Do
 =====
 
--finish proxy scraper
+- improve proxy scraper
 
--finsh implementing mongo
+- implement a hijack.py script that hijacks random comments while surfing user submitted in groups of 5-10
 
--set up loop to fix broken proxies
-
--set up main loop for dbs in upvoter
-
--finish main loop in creator
-<<<<<<< HEAD
-
-=======
->>>>>>> 9ce9da2c6e0bb2ec55fdef39b0a219e9fac48fbc
+- set up the voter script to go to the url, and change images a few times before upvoting so that it doesn't look like the user has been directly linked

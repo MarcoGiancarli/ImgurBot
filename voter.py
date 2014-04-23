@@ -166,6 +166,7 @@ for account in logindata:
         if 'pushed' not in voteButton.get_attribute('class'):
             voteButton.click()
     voteCount += 1
+    print 'Number of votes: '+voteCount
 
     # log out of imgur
     userButton = firefox.find_element_by_class_name('account-user-name')
