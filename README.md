@@ -5,11 +5,9 @@ ImgurBot makes it easy to quickly create imgur.com accounts, store them in a dat
 
 Usage:
 
-$ python updateProxies.py
-
-$ python creator.py numAccounts
-
-$ python voter.py imgTag numVotes up/down
+    $ python updateProxies.py
+    $ python creator.py numAccounts
+    $ python voter.py imgTag numVotes up/down
 
 
 To Do
