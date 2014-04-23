@@ -111,6 +111,7 @@ for account in logindata:
                         exit(1)
 
             # select new proxies
+            print 'Proxies outdated. Selecting 3 new proxies for account '+username+'...'
             proxies = []
             indices = genIndices(len(proxylist))
             for index in indices:
