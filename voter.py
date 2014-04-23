@@ -158,11 +158,11 @@ for account in logindata:
     # go to image url and upvote! <insert upvote gif here>
     firefox.get(IMAGE_URL)
     if vote:
-        voteButton = wait.until(firefox.find_element_by_id('mainUpArrow'))
+        voteButton = wait.until(lambda firefox:firefox.find_element_by_id('mainUpArrow'))
         if 'pushed' not in voteButton.get_attribute('class'):
             voteButton.click()
     else:
-        voteButton = wait.until(firefox.find_element_by_id('mainDownArrow'))
+        voteButton = wait.until(lambda firefox:firefox.find_element_by_id('mainDownArrow'))
         if 'pushed' not in voteButton.get_attribute('class'):
             voteButton.click()
     voteCount += 1
