@@ -1,7 +1,7 @@
 ImgurBot
 ========
 
-ImgurBot makes it easy to quickly create imgur.com accounts, store them in a database, and vote on images with them automatically. I take no responsibility for the actions of any person who uses these scripts. 
+ImgurBot allows users to quickly create many imgur.com accounts, store them in a database, and vote on images with them automatically.
 
 This project currently has three scripts: 
 
