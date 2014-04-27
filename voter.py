@@ -144,6 +144,7 @@ for account in logindata:
             print 'Selenium Module IP',seleniumIP
         except:
             print 'Selenium cannot access the proxy.'
+            exit(1)
 
     # imgur login page
     firefox.get(LOGIN_URL)
