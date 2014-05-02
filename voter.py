@@ -1,6 +1,5 @@
 import sys
 import pymongo
-from bs4 import BeautifulSoup as soup
 import requests
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
@@ -98,8 +97,8 @@ for account in logindata:
                 try:
                     print 'Trying to reach '+proxy['protocol']+'://'+proxy['ip']+':'+proxy['port']+'...'
                     testProxy = {proxy['protocol']:'http://'+proxy['ip']+':'+proxy['port']}
-                    proxyIP = requests.get('http://icanhazip.com',proxies=testProxy,timeout = 4).text
-                    if proxyIP != nativeIP:
+                    proxyIP = requests.get('http://icanhazip.com',proxies=testProxy,timeout = 5).text
+                    if proxy['ip'] in proxyIP:
                         workingProxy = proxy
                         reachable = True
                         proxyNotChosen = False
@@ -123,13 +122,9 @@ for account in logindata:
 
     ########## BEGIN SELENIUM ##########
 
-    profile = webdriver.FirefoxProfile()
-    profile.set_preference('network.proxy.type',1)
-    profile.set_preference('network.proxy.http',workingProxy['ip'])
-    profile.set_preference('network.proxy.http_port',workingProxy['port'])
-    profile.update_preferences()
-    firefox = webdriver.Firefox(firefox_profile=profile)
-    wait = WebDriverWait(firefox, 5)
+    workingProxies = Proxy({'httpProxy' : workingProxy['ip'] + ':' + workingProxy['port']})
+    firefox = webdriver.Firefox(proxy=workingProxies)
+    wait = WebDriverWait(firefox, 8)
 
     # confirm proxy ip in selenium
     firefox.get('http://icanhazip.com')

@@ -7,7 +7,6 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.proxy import *
-from selenium.webdriver.common.keys import Keys
 
 
 BASE_URL = 'https://imgur.com'
@@ -81,118 +80,103 @@ for i in range(0,len(proxylist)):
 
 # main loop of picking 5 accounts, logging in, browsing, and logging out
 while(True):
-    drivers = []
-    accounts = []
-    accountIndices = genIndices(len(logindata),5)
-    loginStatus = [True, True, True, True, True]
-
-    for index in accountIndices:
-        accounts.append(logindata[index])
-
+    account = logindata[random.randint(0,len(logindata))]
 
     # set up browser instances with working proxies
-    for i in range(0,5):
-        account = accounts[i]
+    username = account['username']
+    password = account['password']
 
-        username = account['username']
-        password = account['password']
+    # go through the three proxies in requests until valid one is confirmed
+    # if no valid proxies attached to account, select 3 new ones from the
+    # proxylist collection, update the database, and repeat
+    proxyNotChosen = True
+    while proxyNotChosen:
+        proxies = account['proxies']
+        # confirm that they work. if not, regenerate ips.
+        reachable = False
+        attempts = 0
+        while not reachable:
+            # confirm proxy ip and reachability
+            for proxy in proxies:
+                try:
+                    print 'Trying to reach '+proxy['protocol']+'://'+proxy['ip']+':'+proxy['port']+'...'
+                    testProxy = {proxy['protocol']:'http://'+proxy['ip']+':'+proxy['port']}
+                    proxyIP = requests.get('http://icanhazip.com',proxies=testProxy,timeout = 5).text
+                    if proxy['ip'] in proxyIP:
+                        workingProxy = proxy
+                        print 'Working proxy found: ' + workingProxy
+                        reachable = True
+                        proxyNotChosen = False
+                        break
+                except:
+                    attempts += 1
+                    if attempts >= 100:
+                        print '100 proxies failed in a row. Quitting...'
+                        exit(1)
 
-        # go through the three proxies in requests until valid one is confirmed
-        # if no valid proxies attached to account, select 3 new ones from the
-        # proxylist collection, update the database, and repeat
-        proxyNotChosen = True
-        while proxyNotChosen:
-            proxies = account['proxies']
-            # confirm that they work. if not, regenerate ips.
-            reachable = False
-            attempts = 0
-            nativeIP = requests.get('http://icanhazip.com').text
-            while not reachable:
-                # confirm proxy ip and reachability
-                for proxy in proxies:
-                    try:
-                        print 'Trying to reach '+proxy['protocol']+'://'+proxy['ip']+':'+proxy['port']+'...'
-                        testProxy = {proxy['protocol']:'http://'+proxy['ip']+':'+proxy['port']}
-                        proxyIP = requests.get('http://icanhazip.com',proxies=testProxy,timeout = 4).text
-                        if proxyIP != nativeIP:
-                            workingProxy = proxy
-                            reachable = True
-                            proxyNotChosen = False
-                            break
-                    except:
-                        attempts += 1
-                        if attempts >= 100:
-                            print '100 proxies failed in a row. Quitting...'
-                            exit(1)
+            # select new proxies
+            print 'Proxies outdated. Selecting 3 new proxies for account ' + username + '...'
+            proxies = []
+            indices = genIndices(len(proxylist),3)
+            for index in indices:
+                proxies.append(proxylist[index])
 
-                # select new proxies
-                print 'Proxies outdated. Selecting 3 new proxies for account '+username+'...'
-                proxies = []
-                indices = genIndices(len(proxylist),3)
-                for index in indices:
-                    proxies.append(proxylist[index])
+        # update database with current proxies
+        logindataCollection.update({'_id':account['_id']},{'$set':{'proxies':proxies}},upsert=False,multi=False)
 
-            # update database with current proxies
-            logindataCollection.update({'_id':account['_id']},{'$set':{'proxies':proxies}},upsert=False,multi=False)
+    # selenium setup
+    workingProxies = Proxy({'httpProxy' : workingProxy['ip'] + ':' + workingProxy['port']})
+    firefox = webdriver.Firefox(proxy=workingProxies)
+    wait = WebDriverWait(firefox, 8)
 
-        # selenium setup
-        profile = webdriver.FirefoxProfile()
-        profile.set_preference('network.proxy.type',1)
-        profile.set_preference('network.proxy.http',workingProxy['ip'])
-        profile.set_preference('network.proxy.http_port',workingProxy['port'])
-        profile.update_preferences()
-        driver = webdriver.Firefox(firefox_profile=profile)
-        drivers.append(driver)
-        wait = WebDriverWait(driver, 5)
-
-        # confirm proxy ip in selenium
+    # confirm proxy ip in selenium
+    driver.get('http://icanhazip.com')
+    try:
+        seleniumIP = wait.until(lambda driver:driver.find_element_by_tag_name('pre').text)
+        print 'Selenium Module IP',seleniumIP
+    except:
+        # try once more
         drivers[i].get('http://icanhazip.com')
         try:
             seleniumIP = wait.until(lambda driver:driver.find_element_by_tag_name('pre').text)
             print 'Selenium Module IP',seleniumIP
         except:
-            # try once more
-            drivers[i].get('http://icanhazip.com')
-            try:
-                seleniumIP = wait.until(lambda driver:driver.find_element_by_tag_name('pre').text)
-                print 'Selenium Module IP',seleniumIP
-            except:
-                print 'Selenium cannot access the proxy.'
-                exit(1)
+            print 'Selenium cannot access the proxy.'
+            exit(1)
 
-    # log in to each account
-    for i in range(0,5):
-        driver = drivers[i]
-        driver.get(BASE_URL)
-        loginButton = wait.until(lambda driver:driver.find_element_by_class_name('signin-link'))
-        loginButton.click()
-        usernameField = wait.until(lambda driver:driver.find_element_by_id('dd-username'))
-        passwordField = wait.until(lambda driver:driver.find_element_by_id('dd-password'))
-        submitButton = wait.until(lambda driver:driver.find_element_by_link_text('dd-submit'))
-        usernameField.send_keys(accounts[i]['username'])
-        passwordField.send_keys(accounts[i]['password'])
-        submitButton.submit()
-        somePost = wait.until(lambda driver:driver.find_element_by_class_name('post'))
-        somePost.click()
+
+    # log in
+    driver.get(BASE_URL+'/signin')
+    #loginButton = wait.until(lambda driver:driver.find_element_by_class_name('signin-link'))
+    #loginButton.click()
+    usernameField = wait.until(lambda driver:driver.find_element_by_name('username'))
+    passwordField = wait.until(lambda driver:driver.find_element_by_name('password'))
+    submitButton = wait.until(lambda driver:driver.find_element_by_name('submit'))
+    usernameField.send_keys(account['username'])
+    passwordField.send_keys(account['password'])
+    submitButton.submit()
+    driver.get(BASE_URL)
+    somePost = wait.until(lambda driver:driver.find_element_by_class_name('post'))
+    somePost.click()
 
     # simulate browsing on each user as long as one account is still logged in
+    loginStatus = True
     BASE_PROB = 669
-    while True in loginStatus:
-        for i in range(0,5):
-            actionIndex = random.randint(0,1000000)
-            if actionIndex < BASE_PROB:
-                userButton = firefox.find_element_by_class_name('account-user-name')
-                userButton.click()
-                logoutButton = firefox.find_element_by_link_text('logout')
-                logoutButton.click()
-                drivers[i].quit()
-                loginStatus[i] = False
-            elif actionIndex < 6*BASE_PROB:
-                vote(drivers[i])
-            elif actionIndex < 10*BASE_PROB:
-                comment(drivers[i])
-            elif actionIndex < 180000:
-                Actions.key_down(Keys.ARROW_RIGHT)
-                Actions.key_up(Keys.ARROW_RIGHT)
-        sleepTime = random.uniform(0,0.4)
+    while loginStatus:
+        actionIndex = random.randint(0,1000000)
+        if actionIndex < BASE_PROB:
+            userButton = firefox.find_element_by_class_name('account-user-name')
+            userButton.click()
+            logoutButton = firefox.find_element_by_link_text('logout')
+            logoutButton.click()
+            driver.quit()
+            loginStatus = False
+        elif actionIndex < 6*BASE_PROB:
+            vote(driver)
+        elif actionIndex < 10*BASE_PROB:
+            comment(driver)
+        elif actionIndex < 180000:
+            nextButton = wait.until(lambda driver:driver.find_element_by_class_name('navNext'))
+            nextButton.click()
+        sleepTime = random.uniform(0,1.9)
         time.sleep(sleepTime)

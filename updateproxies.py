@@ -1,13 +1,11 @@
-import pymongo
-import requests
+from imgurbot import *
 from bs4 import BeautifulSoup as Soup
-
-connection = pymongo.Connection()
-db = connection['imgurbotdata']
-proxylist = db['proxylist']
+import requests
 
 # clear old proxylist
-proxylist.remove()
+db = Database()
+db.clear_proxies()
+
 
 #HIDEMYASS_URL = 'https://hidemyass.com/proxy-list/search-226830'
 #LETUSHIDE_URL = 'http://letushide.com/filter/http,ntp,us/list_of_free_HTTP_None_Transparent_US_United_States_proxy_servers'
@@ -41,13 +39,15 @@ numFound = 0
 
 
 # Let Us Hide
-pages = [
-        'http://letushide.com/filter/http,ntp,all/list_of_free_HTTP_None_Transparent_proxy_servers',
-        'http://letushide.com/filter/http,ntp,all/2/list_of_free_HTTP_None_Transparent_proxy_servers',
-        'http://letushide.com/filter/http,ntp,all/3/list_of_free_HTTP_None_Transparent_proxy_servers',
-        'http://letushide.com/filter/http,ntp,all/4/list_of_free_HTTP_None_Transparent_proxy_servers',
-        'http://letushide.com/filter/http,ntp,all/5/list_of_free_HTTP_None_Transparent_proxy_servers',
-        'http://letushide.com/filter/http,ntp,all/6/list_of_free_HTTP_None_Transparent_proxy_servers']
+pages = ['http://letushide.com/filter/https,ntp,all/list_of_free_HTTPS_None_Transparent_proxy_servers',
+         'http://letushide.com/filter/https,ntp,all/2/list_of_free_HTTPS_None_Transparent_proxy_servers',
+         'http://letushide.com/filter/https,ntp,all/3/list_of_free_HTTPS_None_Transparent_proxy_servers']
+         #'http://letushide.com/filter/http,ntp,all/list_of_free_HTTP_None_Transparent_proxy_servers',
+         #'http://letushide.com/filter/http,ntp,all/2/list_of_free_HTTP_None_Transparent_proxy_servers',
+         #'http://letushide.com/filter/http,ntp,all/3/list_of_free_HTTP_None_Transparent_proxy_servers',
+         #'http://letushide.com/filter/http,ntp,all/4/list_of_free_HTTP_None_Transparent_proxy_servers',
+         #'http://letushide.com/filter/http,ntp,all/5/list_of_free_HTTP_None_Transparent_proxy_servers',
+         #'http://letushide.com/filter/http,ntp,all/6/list_of_free_HTTP_None_Transparent_proxy_servers']
 for page in pages:
     letushide = Soup(requests.get(page).text)
     rows = letushide.find_all('tr',{'id':'data'})
@@ -58,7 +58,7 @@ for page in pages:
         port = fields[2].get_text()
         protocol = fields[3].get_text().lower()
         # store proxy in database
-        proxylist.insert({'ip':ip,'port':port,'protocol':protocol})
+        db.add_proxy({'ip':ip,'port':port,'protocol':protocol})
         numFound += 1
 
 
@@ -94,7 +94,7 @@ for page in pages:
 ########## RESULTS ##########
 print ' --',numFound,'Proxies Found -- '
 print 'IP                 Port    Protocol'
-for proxy in proxylist.find():
+for proxy in db.proxylist:
     ip = proxy['ip']
     port = proxy['port']
     protocol = proxy['protocol']
