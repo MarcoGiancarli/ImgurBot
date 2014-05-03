@@ -65,36 +65,30 @@ for page in pages:
 
 # Spys.ru
 page = 'http://spys.ru/en/https-ssl-proxy'
-#try:
-driver.get(page)
-print 'got to spys.ru site'
-driver.find_element_by_id('xpp').click()
-driver.find_element_by_xpath('//select/option[@value=3]').click() # 200 proxies per page
-driver.find_element_by_id('xf1').click()
-driver.find_element_by_xpath('//select/option[@value=1]').click() # only anonymous proxies
-print 'clicked buttons on spys.ru'
-rows = driver.find_elements_by_tag_name('tr')
-row = 8 # ignore title row
-while row<len(rows):
-    print 'checking row',row
-    fields = rows[row].find_elements_by_tag_name('td')
-    # get ip, port, and protocol for proxy
-    print 'fuck you'
-    for field in fields:
-        print field.text
-        if field.get_attribute('class') in 'spy14':
-            ip_port = field.text.split(':')
-            break
-    print 'got ip/port:', ip_port
-    ip = ip_port[0]
-    port = ip_port[1]
-    protocol = fields[1].text.lower()
-    # store proxy in database
-    db.add_proxy({'ip':ip,'port':port,'protocol':protocol})
-    numFound += 1
-    row += 1
-#except:
-#    print 'Could not reach the spys.ru site.'
+try:
+    driver.get(page)
+    driver.find_element_by_id('xpp').click()
+    driver.find_element_by_xpath('//select/option[@value=3]').click() # 200 proxies per page
+    driver.find_element_by_id('xf1').click()
+    driver.find_elements_by_xpath('//select/option[@value=1]')[1].click() # only anonymous proxies
+    rows = driver.find_elements_by_tag_name('tr')
+    row = 7 # ignore title row
+    while row<len(rows):
+        fields = rows[row].find_elements_by_tag_name('td')
+        # get ip, port, and protocol for proxy
+        for field in fields:
+            if field.get_attribute('class') in 'spy14':
+                ip_port = field.text.split()[1].split(':')
+                break
+        ip = ip_port[0]
+        port = ip_port[1]
+        protocol = fields[1].text.split()[0].lower()
+        # store proxy in database
+        db.add_proxy({'ip':ip,'port':port,'protocol':protocol})
+        numFound += 1
+        row += 2
+except:
+    print 'Could not reach the spys.ru site.'
 
 
 # In Cloak
