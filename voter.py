@@ -1,91 +1,46 @@
 import sys
-import pymongo
-import requests
-from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.proxy import *
-import random
 
-if len(sys.argv) != 4:
-    print 'Invalid params! Usage: <image key> <number of votes> <up/down>'
+
+if len(sys.argv) != 5:
+    print 'Invalid params! Usage: <url_with_link> <link_text> <number_of_votes> <up/down>'
     exit(1)
 
 
 LOGIN_URL = 'https://imgur.com/signin'
-IMAGE_URL = 'https://imgur.com/' + sys.argv[1]
-NUM_VOTES = int(sys.argv[2])
+URL_WITH_LINK = sys.argv[1]
+LINK_TEXT = sys.argv[2]
+NUM_VOTES = int(sys.argv[3])
 voteCount = 0
 
-if sys.argv[3] == 'up':
+if sys.argv[4] == 'up':
     vote = True
-elif sys.argv[3] == 'down':
+elif sys.argv[4] == 'down':
     vote = False
 else:
     print 'You need to specify "up" or "down" for the third param.'
     exit(1)
 
-nativeIP = requests.get('http://icanhazip.com').text
-print 'Native IP',nativeIP
-
-
-# generates 3 random indices in the given size
-def genIndices(size):
-    indices = []
-    for i in range(0,3):
-        randomIndex = random.randint(0,size-1)
-        for index in indices:
-            if randomIndex >= index:
-                randomIndex += 1
-        indices.append(randomIndex)
-        size -= 1
-    return indices
-
-
-########## PULL DATA FROM DATABASE ##########
-
-# connect to database
-connection = pymongo.Connection()
-db = connection['imgurbotdata']
-logindataCollection = db['logindata']
-proxylistCollection = db['proxylist']
-
-# get a list of user data from database
-logindata = []
-for account in logindataCollection.find({}):
-    logindata.append(account)
-
-# shuffle logindata
-for i in range(0,len(logindata)):
-    randomIndex = random.randint(i,len(logindata)-1)
-    tmpLogin = logindata[i]
-    logindata[i] = logindata[randomIndex]
-    logindata[randomIndex] = tmpLogin
-
-# get a list of proxies from database
-proxylist = []
-for proxy in proxylistCollection.find({}):
-    proxylist.append(proxy)
-
-# shuffle proxylist
-for i in range(0,len(proxylist)):
-    randomIndex = random.randint(i,len(proxylist)-1)
-    tmpProxy = proxylist[i]
-    proxylist[i] = proxylist[randomIndex]
-    proxylist[randomIndex] = tmpProxy
+db = Database()
 
 
 # cycle through the shuffled account list
-for account in logindata:
-    username = account['username']
-    password = account['password']
+for account in db.logindata:
 
     # go through the three proxies in requests until valid one is confirmed
     # if no valid proxies attached to account, select 3 new ones from the
     # proxylist collection, update the database, and repeat
-    proxyNotChosen = True
-    while proxyNotChosen:
+    proxy_not_chosen = True
+    while proxy_not_chosen:
+
+
+
+
+
+
+
+
+
+
         proxies = account['proxies']
         # confirm that they work. if not, regenerate ips.
         reachable = False

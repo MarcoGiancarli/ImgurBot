@@ -137,6 +137,7 @@ class Imgurbot:
         if 'imgur' not in self.driver.current_url:
             self.driver.get('https://imgur.com/gallery')
         logged_out = False
+        attempts = 0
         while not logged_out:
             try:
                 user_button = self.wait8s.until(lambda driver:driver.find_element_by_class_name('account-user-name'))
@@ -146,6 +147,9 @@ class Imgurbot:
                 logged_out = True
             except:
                 print 'Waiting to find logout button...'
+            attempts += 1
+            if attempts>10:
+                raise CantFindElementError(self.driver.current_url, 'logout') # caused by https failing
 
 
     def vote(self, url_with_link, link_text, vote_up): # for vote, True is up and False is down.
@@ -214,11 +218,12 @@ class Database:
         self.login_collection = db['logindata']
         self.proxy_collection = db['proxylist']
         # get a list of user data from database
-        self.logindata = []
+        self.logindata = {}
         self.login_count = 0
         for account in self.login_collection.find():
             self.login_count += 1
-            self.logindata.append(account)
+            self.logindata[account['username']] = account
+        self.usernames = self.logindata.keys()
         # get a list of proxies from database
         self.proxylist = []
         self.proxy_count = 0
@@ -237,11 +242,11 @@ class Database:
 
     def shuffle_logins(self):
         self.login_index = 0
-        for i in range(0,len(self.logindata)):
-            randomIndex = random.randint(i,len(self.logindata)-1)
-            tmpLogin = self.logindata[i]
-            self.logindata[i] = self.logindata[randomIndex]
-            self.logindata[randomIndex] = tmpLogin
+        for i in range(0,len(self.usernames)):
+            randomIndex = random.randint(i,len(self.usernames)-1)
+            tmpLogin = self.usernames[i]
+            self.usernames[i] = self.usernames[randomIndex]
+            self.usernames[randomIndex] = tmpLogin
 
 
     def shuffle_proxies(self):
@@ -256,7 +261,7 @@ class Database:
     def next_login(self):
         if self.login_index >= len(self.login_index):
             self.login_index = 0
-        retval = self.logindata[login_index]
+        retval = self.logindata[usernames[login_index]]
         self.login_index += 1
         return retval
 
@@ -269,9 +274,15 @@ class Database:
         return retval
 
 
+    def fix_proxies(self, username, proxies):
+        self.login_collection.update({'_id':account['_id']},{'$set':{'proxies':proxies}},upsert=False,multi=False)
+        self.logindata['username']['proxies'] = proxies
+
+
     def add_login(self, username, password, proxies):
         self.login_collection.insert({'username':username,'password':password,'proxies':proxies})
-        self.logindata.append({'username':username,'password':password,'proxies':proxies})
+        self.logindata['username'] = {'username':username,'password':password,'proxies':proxies}
+        self.usernames.append(username)
         self.login_count += 1
 
 

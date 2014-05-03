@@ -43,11 +43,11 @@ while num_created < NUM_TO_CREATE:
         bot = Imgurbot(active_proxy)
         bot.create(username, password)
         db.add_login(username, password, proxies)
-        bot.logout()
-        bot.driver.quit()
-        num_created += 1
         print 'Successfully created: '+username+' -- '+password+'.'
         print 'Created '+str(num_created)+' of '+str(NUM_TO_CREATE)+' so far. '+str(db.login_count)+' in total.'
+        num_created += 1
+        bot.logout()
+        bot.driver.quit()
     except BadProxyError:
         bot.driver.quit()
         print 'Selenium can\'t reach the proxy. Making another account...'
@@ -56,6 +56,10 @@ while num_created < NUM_TO_CREATE:
         bot.driver.quit()
         print 'Selenium can\'t reach the proxy. Making another account...'
         print 'CANT REACH PROXY ERROR: Proxy seems to be offline.'
+    except CantFindElementError:
+        bot.driver.quit()
+        print 'Selenium has encountered a problem: the HTTPS proxy has failed and is no longer accessible.'
+        print 'Account created successfully, but failed to exit normally.'
 
 
 print '-'*40
