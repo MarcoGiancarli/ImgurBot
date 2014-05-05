@@ -119,19 +119,17 @@ class Imgurbot:
 
 
     def login(self, username, password):
-        # imgur login page
-        LOGIN_URL = 'https://imgur.com/signin'
-        self.driver.get(LOGIN_URL)
-
-        # get fields
-        userField = self.wait8s.until(lambda driver:driver.find_element_by_name('username'))
-        passField = self.wait8s.until(lambda driver:driver.find_element_by_name('password'))
-        submitButton = self.wait8s.until(lambda driver:driver.find_element_by_name('submit'))
-
-        # fill forms and submit
-        userField.send_keys(username)
-        passField.send_keys(password)
-        submitButton.submit()
+        try:
+            LOGIN_URL = 'https://imgur.com/signin'
+            self.driver.get(LOGIN_URL)
+            user_field = self.wait8s.until(lambda driver:driver.find_element_by_name('username'))
+            pass_field = self.wait8s.until(lambda driver:driver.find_element_by_name('password'))
+            submit_button = self.wait8s.until(lambda driver:driver.find_element_by_name('submit'))
+            user_field.send_keys(username)
+            pass_field.send_keys(password)
+            submit_button.submit()
+        except:
+            raise CantFindElementError(self.driver.current_url, 'login')
 
 
     def logout(self):
@@ -161,46 +159,63 @@ class Imgurbot:
         except:
             raise CantFindLinkError(url_with_link, link_text)
 
-        if vote_up:
-            button_id = 'mainUpArrow'
-        else:
-            button_id = 'mainDownArrow'
+        try:
+            if vote_up:
+                button_id = 'mainUpArrow'
+            else:
+                button_id = 'mainDownArrow'
+            vote_button = self.wait8s.until(lambda driver:driver.find_element_by_id(button_id))
+            # if the button is already pushed, we don't want to remove that vote!
+            if 'pushed' not in vote_button.get_attribute('class'):
+                vote_button.click()
+        except:
+            raise CantFindElementError(self.driver.current_url, 'arrow')
 
-        vote_button = self.wait8s.until(lambda driver:driver.find_element_by_id(button_id))
-        # if the button is already pushed, we don't want to remove that vote!
-        if 'pushed' not in voteButton.get_attribute('class'):
-            vote_button.click()
+
+    def nav_to_gallery(self):
+        self.driver.get('https://imgur.com')
+        try:
+            next_button = self.wait8s.until(lambda driver:driver.find_element_by_class_name('post'))
+            next_button.click()
+        except:
+            raise CantFindElementError(self.driver.current_url, 'post')
 
 
     def go_to_next(self):
-        # find next page link, click it
-        next_button = self.wait8s.until(lambda driver:driver.find_element_by_class_name('navNext'))
-        next_button.click()
+        try:
+            next_button = self.wait8s.until(lambda driver:driver.find_element_by_class_name('navNext'))
+            next_button.click()
+        except:
+            raise CantFindElementError(self.driver.current_url, 'navNext')
 
 
     def auto_vote(self):
-        up_counter = self.wait8s.until(lambda driver:driver.find_element_by_class_name('title positive'))
-        down_counter = self.wait8s.until(lambda driver:driver.find_element_by_class_name('title negative'))
-        ups = int(up_counter.text)
-        downs = int(down_counter.text)
-
-        if random.randint(0,ups+downs) < ups:
-            button_id = 'mainUpArrow'
-        else:
-            button_id = 'mainDownArrow'
-
-        vote_button = self.wait8s.until(lambda driver:driver.find_element_by_id(button_id))
-        # if the button is already pushed, we don't want to remove that vote!
-        if 'pushed' not in voteButton.get_attribute('class'):
-            vote_button.click()
+        try:
+            up_counter = self.wait8s.until(lambda driver:driver.find_element_by_class_name('title positive'))
+            down_counter = self.wait8s.until(lambda driver:driver.find_element_by_class_name('title negative'))
+            ups = int(up_counter.text)
+            downs = int(down_counter.text)
+            if random.randint(0,ups+downs) < ups:
+                button_id = 'mainUpArrow'
+            else:
+                button_id = 'mainDownArrow'
+            vote_button = self.wait8s.until(lambda driver:driver.find_element_by_id(button_id))
+            # if the button is already pushed, we don't want to remove that vote!
+            if 'pushed' not in voteButton.get_attribute('class'):
+                vote_button.click()
+        except:
+            raise CantFindElementError(self.driver.current_url, 'arrow')
 
 
     def comment(self, comment_text):
-        comment_button = self.wait8s.until(lambda driver:driver.find_element_by_id('submit-caption-button'))
-        comment_field = self.wait8s.until(lambda driver:driver.find_element_by_id('caption_textarea'))
-        comment_field.click()
-        comment_field.send_keys(comment_text)
-        comment_button.click()
+        try:
+            comment_button = self.wait8s.until(lambda driver:driver.find_element_by_id('submit-caption-button'))
+            comment_field = self.wait8s.until(lambda driver:driver.find_element_by_id('caption_textarea'))
+            comment_field.click()
+            comment_field.send_keys(comment_text)
+            comment_button.click()
+        except:
+            raise CantFindElementError(self.driver.current_url, 'commentbox')
 
 
     def get_comment_text(self):
@@ -262,17 +277,17 @@ class Database:
 
 
     def next_login(self):
-        if self.login_index >= len(self.login_index):
+        if self.login_index >= len(self.usernames):
             self.login_index = 0
-        retval = self.logindata[usernames[login_index]]
+        retval = self.logindata[self.usernames[self.login_index]]
         self.login_index += 1
         return retval
 
 
     def next_proxy(self):
-        if self.proxy_index >= len(self.proxy_index):
+        if self.proxy_index >= len(self.proxylist):
             self.proxy_index = 0
-        retval = self.proxylist[proxy_index]
+        retval = self.proxylist[self.proxy_index]
         self.proxy_index += 1
         return retval
 

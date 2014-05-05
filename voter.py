@@ -10,7 +10,7 @@ if len(sys.argv) != 5:
 URL_WITH_LINK = sys.argv[1]
 LINK_TEXT = sys.argv[2]
 NUM_VOTES = int(sys.argv[3])
-voteCount = 0
+vote_count = 0
 db = Database()
 db.shuffle_logins()
 
@@ -37,6 +37,7 @@ for account in accounts:
             bot.login(account['username'], account['password'])
             bot.vote(URL_WITH_LINK, LINK_TEXT, vote_up)
             print 'Successfully voted on account',account['username']
+            vote_count += 1
             not_voted = False
             bot.logout()
             bot.driver.quit()
@@ -49,12 +50,13 @@ for account in accounts:
         except CantFindLinkError:
             bot.driver.quit()
             print 'Selenium has encountered a problem: the link provided does not contain the link text.'
-            print 'Try fixing your parameters.'
-            exit(1)
+            print 'Verify that your parameters are correct.'
         except CantFindElementError:
             bot.driver.quit()
             print 'Selenium has encountered a problem: couldn\'t find logout button.'
             print 'Account voted successfully, but failed to exit normally.'
+    if vote_count >= NUM_VOTES:
+        break
 
 
 ########## RESULTS ##########
