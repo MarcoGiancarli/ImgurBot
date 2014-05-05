@@ -12,12 +12,14 @@ import sys
 # In case selenium can't reach the proxy
 class CantReachProxyError(Exception):
     def __init__(self, proxy):
+        self.driver.quit()
         self.proxy = proxy
 
 
 # In case selenium can reach the proxy, but the IP is wrong
 class BadProxyError(Exception):
     def __init__(self, proxy):
+        self.driver.quit()
         self.proxy = proxy
 
 
@@ -117,15 +119,14 @@ class Imgurbot:
 
 
     def login(self, username, password):
-        LOGIN_URL = 'https://imgur.com/signin'
-
         # imgur login page
-        firefox.get(LOGIN_URL)
+        LOGIN_URL = 'https://imgur.com/signin'
+        self.driver.get(LOGIN_URL)
 
         # get fields
-        userField = wait.until(lambda driver:driver.find_element_by_name('username'))
-        passField = wait.until(lambda driver:driver.find_element_by_name('password'))
-        submitButton = wait.until(lambda driver:driver.find_element_by_name('submit'))
+        userField = self.wait8s.until(lambda driver:driver.find_element_by_name('username'))
+        passField = self.wait8s.until(lambda driver:driver.find_element_by_name('password'))
+        submitButton = self.wait8s.until(lambda driver:driver.find_element_by_name('submit'))
 
         # fill forms and submit
         userField.send_keys(username)
@@ -156,6 +157,7 @@ class Imgurbot:
         self.driver.get(url_with_link)
         try:
             link_to_img = self.wait8s.until(lambda driver:driver.find_element_by_partial_link_text(link_text))
+            link_to_img.click()
         except:
             raise CantFindLinkError(url_with_link, link_text)
 
@@ -171,8 +173,9 @@ class Imgurbot:
 
 
     def go_to_next(self):
-        print 'lolwut'
         # find next page link, click it
+        next_button = self.wait8s.until(lambda driver:driver.find_element_by_class_name('navNext'))
+        next_button.click()
 
 
     def auto_vote(self):
@@ -274,9 +277,39 @@ class Database:
         return retval
 
 
-    def fix_proxies(self, username, proxies):
+    def fix_proxies(self, account):
+        # swap proxy sets until there is at least 1 working proxy
+        proxies_not_chosen = True
+
+        # check the proxies associated with the account
+        no_active_proxy = True
+        proxies = account['proxies']
+        for proxy in proxies:
+            if self.test_proxy(proxy):
+                active_proxy = proxy
+                no_active_proxy = False
+                break
+
+        # if none of the proxies work, grab 3 more until one does
+        attempts = 0
+        while no_active_proxy:
+            indices = self.make_indices(self.proxy_count, 3)
+            proxies = [self.proxylist[i] for i in indices]
+            for proxy in proxies:
+                if self.test_proxy(proxy):
+                    active_proxy = proxy
+                    no_active_proxy = False
+                    break
+            if not no_active_proxy:
+                break
+            attempts += 1
+            if attempts>30:
+                print 'Failed to reach too many proxies. Try updating your proxies. Shutting down.'
+                exit(1)
+
         self.login_collection.update({'_id':account['_id']},{'$set':{'proxies':proxies}},upsert=False,multi=False)
-        self.logindata['username']['proxies'] = proxies
+        self.logindata[account['username']]['proxies'] = proxies
+        return active_proxy
 
 
     def add_login(self, username, password, proxies):
@@ -337,6 +370,9 @@ class Database:
 
 
     def test_proxy(self,proxy):
+        if proxy['protocol'] != 'https':
+            print ' FAILED: Wrong proxy protocol.'
+            return False
         sys.stdout.write('Trying to reach '+proxy['protocol']+'://'+proxy['ip']+':'+proxy['port']+'...')
         sys.stdout.flush() # for printing at correct time
         testProxy = {proxy['protocol']:'http://'+proxy['ip']+':'+proxy['port'],
@@ -344,11 +380,11 @@ class Database:
         try:
             proxyIP = requests.get('http://icanhazip.com',proxies=testProxy,timeout=8).text
         except:
-            print ' FAILED'
+            print ' FAILED: Couldn\'t reach icanhazip.com'
             return False
         if proxy['ip'] in proxyIP:
             print ' SUCCESS'
             return True
         else:
-            print ' FAILED'
+            print ' FAILED: IP could not be confirmed.'
             return False

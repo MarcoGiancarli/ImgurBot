@@ -44,8 +44,8 @@ while num_created < NUM_TO_CREATE:
         bot.create(username, password)
         db.add_login(username, password, proxies)
         print 'Successfully created: '+username+' -- '+password+'.'
-        print 'Created '+str(num_created)+' of '+str(NUM_TO_CREATE)+' so far. '+str(db.login_count)+' in total.'
         num_created += 1
+        print 'Created '+str(num_created)+' of '+str(NUM_TO_CREATE)+' so far. '+str(db.login_count)+' in total.'
         bot.logout()
         bot.driver.quit()
     except BadProxyError:

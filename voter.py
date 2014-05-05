@@ -1,3 +1,4 @@
+from imgurbot import *
 import sys
 
 
@@ -6,130 +7,55 @@ if len(sys.argv) != 5:
     exit(1)
 
 
-LOGIN_URL = 'https://imgur.com/signin'
 URL_WITH_LINK = sys.argv[1]
 LINK_TEXT = sys.argv[2]
 NUM_VOTES = int(sys.argv[3])
 voteCount = 0
+db = Database()
+db.shuffle_logins()
 
 if sys.argv[4] == 'up':
-    vote = True
+    vote_up = True
 elif sys.argv[4] == 'down':
-    vote = False
+    vote_up = False
 else:
     print 'You need to specify "up" or "down" for the third param.'
     exit(1)
 
-db = Database()
-
 
 # cycle through the shuffled account list
-for account in db.logindata:
+accounts = [db.logindata[username] for username in db.usernames]
+for account in accounts:
 
-    # go through the three proxies in requests until valid one is confirmed
-    # if no valid proxies attached to account, select 3 new ones from the
-    # proxylist collection, update the database, and repeat
-    proxy_not_chosen = True
-    while proxy_not_chosen:
+    not_voted = True
+    while not_voted:
+        active_proxy = db.fix_proxies(account)
 
-
-
-
-
-
-
-
-
-
-        proxies = account['proxies']
-        # confirm that they work. if not, regenerate ips.
-        reachable = False
-        attempts = 0
-        nativeIP = requests.get('http://icanhazip.com').text
-        while not reachable:
-            # confirm proxy ip and reachability
-            for proxy in proxies:
-                try:
-                    print 'Trying to reach '+proxy['protocol']+'://'+proxy['ip']+':'+proxy['port']+'...'
-                    testProxy = {proxy['protocol']:'http://'+proxy['ip']+':'+proxy['port']}
-                    proxyIP = requests.get('http://icanhazip.com',proxies=testProxy,timeout = 5).text
-                    if proxy['ip'] in proxyIP:
-                        workingProxy = proxy
-                        reachable = True
-                        proxyNotChosen = False
-                        break
-                except:
-                    attempts += 1
-                    if attempts >= 100:
-                        print '100 proxies failed in a row. Quitting...'
-                        exit(1)
-
-            # select new proxies
-            print 'Proxies outdated. Selecting 3 new proxies for account '+username+'...'
-            proxies = []
-            indices = genIndices(len(proxylist))
-            for index in indices:
-                proxies.append(proxylist[index])
-
-    # update database with current proxies
-    logindataCollection.update({'_id':account['_id']},{'$set':{'proxies':proxies}},upsert=False,multi=False)
-
-
-    ########## BEGIN SELENIUM ##########
-
-    workingProxies = Proxy({'httpProxy' : workingProxy['ip'] + ':' + workingProxy['port']})
-    firefox = webdriver.Firefox(proxy=workingProxies)
-    wait = WebDriverWait(firefox, 8)
-
-    # confirm proxy ip in selenium
-    firefox.get('http://icanhazip.com')
-    try:
-        seleniumIP = wait.until(lambda firefox:firefox.find_element_by_tag_name('pre').text)
-        print 'Selenium Module IP',seleniumIP
-    except:
-        # try once more
-        firefox.get('http://icanhazip.com')
         try:
-            seleniumIP = wait.until(lambda firefox:firefox.find_element_by_tag_name('pre').text)
-            print 'Selenium Module IP',seleniumIP
-        except:
-            print 'Selenium cannot access the proxy.'
+            print 'Attempting to vote on account',account['username'],'('+account['password']+')...'
+            bot = Imgurbot(active_proxy)
+            bot.login(account['username'], account['password'])
+            bot.vote(URL_WITH_LINK, LINK_TEXT, vote_up)
+            print 'Successfully voted on account',account['username']
+            not_voted = False
+            bot.logout()
+            bot.driver.quit()
+        except BadProxyError:
+            print 'Selenium can\'t reach the proxy. Making another account...'
+            print 'BAD PROXY ERROR: The apparent IP when accessing the web is incorrect.'
+        except CantReachProxyError:
+            print 'Selenium can\'t reach the proxy. ...'
+            print 'CANT REACH PROXY ERROR: Proxy seems to be offline.'
+        except CantFindLinkError:
+            bot.driver.quit()
+            print 'Selenium has encountered a problem: the link provided does not contain the link text.'
+            print 'Try fixing your parameters.'
             exit(1)
+        except CantFindElementError:
+            bot.driver.quit()
+            print 'Selenium has encountered a problem: couldn\'t find logout button.'
+            print 'Account voted successfully, but failed to exit normally.'
 
-    # imgur login page
-    firefox.get(LOGIN_URL)
-    # get fields
-    userField = wait.until(lambda firefox:firefox.find_element_by_name('username'))
-    passField = wait.until(lambda firefox:firefox.find_element_by_name('password'))
-    submitButton = wait.until(lambda firefox:firefox.find_element_by_name('submit'))
-    # fill forms and submit
-    userField.send_keys(username)
-    passField.send_keys(password)
-    submitButton.submit()
-
-    # go to image url and upvote! <insert upvote gif here>
-    firefox.get(IMAGE_URL)
-    if vote:
-        voteButton = wait.until(lambda firefox:firefox.find_element_by_id('mainUpArrow'))
-        if 'pushed' not in voteButton.get_attribute('class'):
-            voteButton.click()
-    else:
-        voteButton = wait.until(lambda firefox:firefox.find_element_by_id('mainDownArrow'))
-        if 'pushed' not in voteButton.get_attribute('class'):
-            voteButton.click()
-    voteCount += 1
-    print 'Number of votes: '+voteCount
-
-    # log out of imgur
-    userButton = firefox.find_element_by_class_name('account-user-name')
-    userButton.click()
-    logoutButton = firefox.find_element_by_link_text('logout')
-    logoutButton.click()
-    firefox.quit()
-
-    # break if we have enough votes.
-    if voteCount >= NUM_VOTES:
-        break
 
 ########## RESULTS ##########
 
