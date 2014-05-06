@@ -3,6 +3,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.proxy import *
+from selenium.webdriver.common.keys import Keys
 from pymongo import Connection
 import requests
 import random
@@ -183,18 +184,18 @@ class Imgurbot:
 
     def go_to_next(self):
         try:
-            next_button = self.wait8s.until(lambda driver:driver.find_element_by_class_name('navNext'))
-            next_button.click()
+            body = self.wait8s.until(lambda driver:driver.find_element_by_tag_name('body'))
+            body.send_keys(Keys.ARROW_RIGHT)
         except:
-            raise CantFindElementError(self.driver.current_url, 'navNext')
+            raise CantFindElementError(self.driver.current_url, 'body')
 
 
     def auto_vote(self):
         try:
             up_counter = self.wait8s.until(lambda driver:driver.find_element_by_class_name('title positive'))
             down_counter = self.wait8s.until(lambda driver:driver.find_element_by_class_name('title negative'))
-            ups = int(up_counter.text)
-            downs = int(down_counter.text)
+            ups = int(up_counter.get_attribute('original-title'))
+            downs = int(down_counter.get_attribute('original-title'))
             if random.randint(0,ups+downs) < ups:
                 button_id = 'mainUpArrow'
             else:
@@ -262,22 +263,23 @@ class Database:
         self.login_index = 0
         for i in range(0,len(self.usernames)):
             randomIndex = random.randint(i,len(self.usernames)-1)
-            tmpLogin = self.usernames[i]
+            tmp_login = self.usernames[i]
             self.usernames[i] = self.usernames[randomIndex]
-            self.usernames[randomIndex] = tmpLogin
+            self.usernames[randomIndex] = tmp_login
 
 
     def shuffle_proxies(self):
         self.proxy_index = 0
         for i in range(0,len(self.proxylist)):
             randomIndex = random.randint(i,len(self.proxylist)-1)
-            tmpProxy = self.proxylist[i]
+            tmp_proxy = self.proxylist[i]
             self.proxylist[i] = self.proxylist[randomIndex]
-            self.proxylist[randomIndex] = tmpProxy
+            self.proxylist[randomIndex] = tmp_proxy
 
 
     def next_login(self):
         if self.login_index >= len(self.usernames):
+            self.shuffle_logins()
             self.login_index = 0
         retval = self.logindata[self.usernames[self.login_index]]
         self.login_index += 1
