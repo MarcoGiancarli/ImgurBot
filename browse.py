@@ -23,7 +23,7 @@ while(True):
 
     # simulate browsing on the user as long as it is still logged in
     login_status = True
-    BASE_PROB = 669
+    BASE_PROB = 750
     while login_status:
         action_index = random.randint(0,1000000)
         if action_index < BASE_PROB:
