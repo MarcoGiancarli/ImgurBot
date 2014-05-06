@@ -249,13 +249,9 @@ class Database:
         for proxy in self.proxy_collection.find():
             self.proxy_count += 1
             self.proxylist.append(proxy)
-        # create indices for iterating through the data
-        self.login_index = 0
-        self.proxy_index = 0
         # get the nouns to make usernames
-        nouns_file = open('nouns.txt')
-        self.nouns = nouns_file.read().splitlines()
-        nouns_file.close()
+        with open('nouns.txt') as f:
+            self.nouns = f.read().splitlines()
         self.NOUNS_SIZE = len(self.nouns)
 
 
@@ -278,20 +274,17 @@ class Database:
 
 
     def next_login(self):
-        if self.login_index >= len(self.usernames):
+        while True:
             self.shuffle_logins()
-            self.login_index = 0
-        retval = self.logindata[self.usernames[self.login_index]]
-        self.login_index += 1
-        return retval
+            for username in self.usernames:
+                yield self.logindata[username]
 
 
     def next_proxy(self):
-        if self.proxy_index >= len(self.proxylist):
-            self.proxy_index = 0
-        retval = self.proxylist[self.proxy_index]
-        self.proxy_index += 1
-        return retval
+        while True:
+            self.shuffle_proxies()
+            for proxy in proxylist:
+                yield proxy
 
 
     def fix_proxies(self, account):

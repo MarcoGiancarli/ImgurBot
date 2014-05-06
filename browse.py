@@ -5,12 +5,9 @@ from imgurbot import *
 
 
 db = Database()
-db.shuffle_logins()
 
 
-# main loop of picking 5 accounts, logging in, browsing, and logging out
-while(True):
-    account = db.next_login()
+for account in db.next_login():
     try:
         print 'Trying to log in on user',account['username'],'('+account['username']+')...'
         active_proxy = db.fix_proxies(account)
@@ -38,7 +35,7 @@ while(True):
             try:
                 sys.stdout.write('Attempting to comment on the current post...')
                 sys.stdout.flush()
-                bot.comment('lolwut')
+                bot.comment('lolwut') # test comment
                 print ' SUCCESS'
             except:
                 print ' FAILED'
