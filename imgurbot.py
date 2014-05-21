@@ -186,11 +186,13 @@ class Imgurbot:
         if random.randint(1,3) == 1:
             new_hot = 'new'
         self.driver.get('https://imgur.com/'+new_hot+'/time')
-        try:
-            first_post = self.wait8s.until(lambda driver:driver.find_element_by_class_name('post'))
-            first_post.click()
-        except:
-            raise CantFindElementError(self.driver.current_url, 'post')
+        all_posts_url = self.driver.current_url
+        while self.driver.current_url == all_posts_url:
+            try:
+                first_post = self.wait8s.until(lambda driver:driver.find_element_by_class_name('post'))
+                first_post.click()
+            except:
+                raise CantFindElementError(self.driver.current_url, 'post')
 
 
     def go_to_next(self):
