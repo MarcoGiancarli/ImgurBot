@@ -24,8 +24,7 @@ else:
 
 
 # cycle through the shuffled account list
-accounts = [db.logindata[username] for username in db.usernames]
-for account in accounts:
+for account in db.next_login():
 
     not_voted = True
     while not_voted:
