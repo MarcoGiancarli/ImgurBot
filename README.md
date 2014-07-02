@@ -3,7 +3,14 @@ ImgurBot
 
 ImgurBot allows users to quickly create many imgur.com accounts, store them in a database, and vote on images with them automatically.
 
-This project currently has four scripts: 
+Note
+====
+
+This project is no longer being worked on due to imgur voting security.
+
+---
+
+This project currently has four portions: 
 
 1. updateproxies.py scrapes the web for proxies, and stores them in the database. Grabs roughly 300 HTTPS proxies.
 2. creator.py uses these proxies to create new users with names and passwords randomly generated from the nouns.txt file. it then assigns 3 random proxies to this user, and confirms that at least one of them is up. If not, it removes these proxies and assigns 3 more. Then, a webdriver instance will simulate registering the account. Currently, everything is automated except for the ReCaptcha, which must be completed manually. Once an account has been created successfully, it is stored into the database, along with its associated proxies.

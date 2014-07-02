@@ -32,10 +32,10 @@ for account in db.next_login():
                 bot.driver.quit()
                 login_status = False
                 print ' SUCCESS'
-                fail_count = 0
             except:
                 print ' FAILED'
-                fail_count += 1
+                bot.driver.quit()
+                break
         elif action_index < 6 * BASE_PROB:
             try:
                 sys.stdout.write('Attempting to comment on the current post...')
